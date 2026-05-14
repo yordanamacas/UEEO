@@ -1,13 +1,36 @@
 // --- CARGA E INICIALIZACIÓN ---
 let clasesGuardadas = JSON.parse(localStorage.getItem('agenda_universitaria_clases')) || [];
 
-// --- FUNCIONES DEL MODAL (PARA QUE PUEDAS ESCRIBIR) ---
+// --- FUNCIÓN PARA ENTRAR (Faltaba en tu JS) ---
+function entrar() {
+    const nombre = document.getElementById('nombre-usuario').value;
+    const curso = document.getElementById('curso-usuario').value;
+
+    if (nombre.trim() !== "" && curso.trim() !== "") {
+        const perfil = { nombre: nombre, curso: curso };
+        localStorage.setItem('perfil_usuario', JSON.stringify(perfil));
+        
+        document.getElementById('pantalla-registro').style.display = 'none';
+        document.getElementById('pantalla-horario').style.display = 'block';
+        document.getElementById('tag-user').innerText = nombre.toUpperCase();
+        
+        renderizarHorario();
+    } else {
+        alert("Por favor, ingresa tu nombre y curso.");
+    }
+}
+
+// --- FUNCIONES DEL MODAL (CON FIX PARA MÓVIL) ---
 function abrirModal() {
     const modal = document.getElementById('modal-tarea');
     if (modal) {
         modal.style.display = 'flex';
-        // Esto pone el cursor automáticamente en el cuadro de texto
-        document.getElementById('input-materia').focus();
+        // El secreto para el Redmi 10C: un pequeño retraso antes del focus
+        setTimeout(() => {
+            const inputMateria = document.getElementById('input-materia');
+            inputMateria.focus();
+            inputMateria.click(); // Doble seguridad para activar el teclado
+        }, 300);
     }
 }
 
@@ -29,15 +52,12 @@ function guardarClase() {
             dia: diaInput.value 
         };
         
-        // Guardar en la lista y en el navegador
         clasesGuardadas.push(nuevaClase);
         localStorage.setItem('agenda_universitaria_clases', JSON.stringify(clasesGuardadas));
         
-        // Actualizar la vista
         renderizarHorario();
         cerrarModal();
         
-        // Limpiar para la próxima vez
         materiaInput.value = "";
         horaInput.value = "";
     } else {
@@ -78,12 +98,11 @@ function actualizarApp() {
     const reloj = document.getElementById('clock');
     if (reloj) reloj.innerText = `${h}:${m}:${s}`;
 
-    // Alerta de clase
-    const HHMM = `${h}:${m}`;
-    const diasSemana = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
-    const hoy = diasSemana[ahora.getDay()];
-
     if (ahora.getSeconds() === 0) {
+        const HHMM = `${h}:${m}`;
+        const diasSemana = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
+        const hoy = diasSemana[ahora.getDay()];
+
         clasesGuardadas.forEach(c => {
             if(c.dia === hoy && c.hora === HHMM) {
                 alert("📢 Clase ahora: " + c.materia);
@@ -92,9 +111,16 @@ function actualizarApp() {
     }
 }
 
+// --- SALIR / CERRAR SESIÓN (Faltaba en tu JS) ---
+function cerrarSesion() {
+    if(confirm("¿Quieres cerrar sesión?")) {
+        localStorage.clear();
+        location.reload();
+    }
+}
+
 setInterval(actualizarApp, 1000);
 
-// --- AL CARGAR LA PÁGINA ---
 window.onload = () => {
     const perfil = JSON.parse(localStorage.getItem('perfil_usuario'));
     if(perfil) {
@@ -102,6 +128,21 @@ window.onload = () => {
         document.getElementById('pantalla-horario').style.display = 'block';
         document.getElementById('tag-user').innerText = perfil.nombre.toUpperCase();
     }
+    
+    // Auto-cargar notas si existen
+    const notasGuardadas = localStorage.getItem('notas_agenda');
+    const areaNotas = document.getElementById('notes-area');
+    if (notasGuardadas && areaNotas) {
+        areaNotas.value = notasGuardadas;
+    }
+    
+    // Guardado automático de notas
+    if (areaNotas) {
+        areaNotas.addEventListener('input', (e) => {
+            localStorage.setItem('notas_agenda', e.target.value);
+        });
+    }
+
     renderizarHorario();
     actualizarApp();
 };
