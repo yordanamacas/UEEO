@@ -1,16 +1,15 @@
-// 1. CARGA INICIAL: Recuperar datos guardados con validación
+// 1. CARGA INICIAL: Recuperar datos con validación inmediata
 let clasesGuardadas = JSON.parse(localStorage.getItem('agenda_universitaria_clases')) || [];
 
-// --- FUNCIÓN DE ENTRADA (REGISTRO) ---
+// --- FUNCIÓN DE ENTRADA ---
 function entrar() {
     const nombre = document.getElementById('nombre-usuario').value;
     const curso = document.getElementById('curso-usuario').value;
     
     if(nombre && curso) {
-        // Guardar perfil en localStorage
         localStorage.setItem('perfil_usuario', JSON.stringify({nombre, curso}));
         
-        // Solicitar permiso para notificaciones nativas
+        // REQUERIDO: Los navegadores modernos solo permiten notificaciones tras un clic del usuario
         solicitarPermisoNotificaciones();
         
         mostrarApp();
@@ -26,31 +25,37 @@ function mostrarApp() {
         document.getElementById('pantalla-horario').style.display = 'block';
         document.getElementById('tag-user').innerText = perfil.nombre.toUpperCase();
         
-        // CRÍTICO: Cargar las materias que ya estaban guardadas
+        // Forzamos el dibujado de las materias guardadas
         renderizarHorario();
     }
 }
 
-// --- SISTEMA DE NOTIFICACIONES ---
+// --- SISTEMA DE NOTIFICACIONES MEJORADO ---
 function solicitarPermisoNotificaciones() {
-    if ("Notification" in window) {
-        Notification.requestPermission().then(perm => {
-            if (perm === "granted") {
-                console.log("Permiso de notificaciones concedido.");
-            }
-        });
+    if (!("Notification" in window)) {
+        console.log("Este navegador no soporta notificaciones.");
+        return;
     }
+
+    Notification.requestPermission().then(perm => {
+        if (perm === "granted") {
+            // Prueba inmediata para confirmar que funcionan
+            new Notification("¡Sistema Activo!", {
+                body: "Te avisaré cuando empiecen tus clases.",
+                icon: "https://cdn-icons-png.flaticon.com/512/2997/2997300.png"
+            });
+        }
+    });
 }
 
 function enviarNotificacion(mensaje) {
-    // Si el usuario dio permiso, enviamos notificación de sistema
-    if ("Notification" in window && Notification.permission === "granted") {
+    if (Notification.permission === "granted") {
         new Notification("⏰ Alarma de Clase", { 
             body: mensaje,
-            icon: "https://cdn-icons-png.flaticon.com/512/2997/2997300.png" 
+            requireInteraction: true // La notificación no se quita sola hasta que la cierres
         });
     } else {
-        // Si no hay permiso, usamos el alert clásico
+        // Si fallan las notificaciones de sistema, usamos el cuadro de alerta
         alert("📢 " + mensaje);
     }
 }
@@ -64,21 +69,20 @@ function actualizarRelojYAlarma() {
     const opciones = { weekday: 'long', day: 'numeric', month: 'long' };
     document.getElementById('date-display').innerText = ahora.toLocaleDateString('es-ES', opciones);
 
-    // LÓGICA DE ALARMA AUTOMÁTICA
     const HHMM = timeStr.substring(0, 5); 
     const dias = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
     const hoy = dias[ahora.getDay()];
 
     clasesGuardadas.forEach(clase => {
-        // Verifica día, hora exacta y que sea el segundo 0 para no repetir el alert
+        // Verificamos segundo 0 para que la alarma solo suene una vez por minuto
         if(clase.dia === hoy && clase.hora === HHMM && ahora.getSeconds() === 0) {
-            enviarNotificacion("Es momento de iniciar: " + clase.materia);
+            enviarNotificacion("Empieza la clase de: " + clase.materia);
         }
     });
 }
 setInterval(actualizarRelojYAlarma, 1000);
 
-// --- GESTIÓN DEL HORARIO (SOLUCIÓN AL GUARDADO) ---
+// --- GESTIÓN DEL HORARIO ---
 function abrirModal() { document.getElementById('modal-tarea').style.display = 'flex'; }
 function cerrarModal() { document.getElementById('modal-tarea').style.display = 'none'; }
 
@@ -88,62 +92,64 @@ function guardarClase() {
     const dia = document.getElementById('input-dia').value;
 
     if(materia && hora) {
-        // 1. Añadir al array en memoria
+        // Añadir al array
         clasesGuardadas.push({ materia, hora, dia });
         
-        // 2. Guardar el array completo actualizado en localStorage
+        // GUARDADO CRÍTICO: Sobreescribimos el localStorage con el nuevo array
         localStorage.setItem('agenda_universitaria_clases', JSON.stringify(clasesGuardadas));
         
-        // 3. Refrescar la vista del horario
+        console.log("Clase guardada correctamente:", materia); // Para debug en consola
+        
         renderizarHorario();
         cerrarModal();
         
-        // Limpiar campos
         document.getElementById('input-materia').value = "";
         document.getElementById('input-hora').value = "";
     }
 }
 
 function renderizarHorario() {
-    const dias = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes"];
+    const diasSemana = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes"];
     
-    dias.forEach(d => {
+    diasSemana.forEach(d => {
         const columna = document.getElementById(d);
         if (columna) {
             const lista = columna.querySelector('.task-list');
-            lista.innerHTML = "";
+            lista.innerHTML = ""; // Limpiamos antes de redibujar
             
-            // Filtramos las clases de este día y las ordenamos por hora
-            clasesGuardadas
+            // Filtramos las materias del día específico y las ordenamos
+            const materiasDelDia = clasesGuardadas
                 .filter(c => c.dia === d)
-                .sort((a,b) => a.hora.localeCompare(b.hora))
-                .forEach(c => {
-                    lista.innerHTML += `
-                        <div class="task-item">
-                            <b>${c.hora}</b> - ${c.materia}
-                        </div>`;
-                });
+                .sort((a,b) => a.hora.localeCompare(b.hora));
+
+            materiasDelDia.forEach(c => {
+                const item = document.createElement('div');
+                item.className = 'task-item';
+                item.innerHTML = `<b>${c.hora}</b> - ${c.materia}`;
+                lista.appendChild(item);
+            });
         }
     });
 }
 
-// --- NOTAS (AUTO-GUARDADO) ---
+// --- BLOC DE NOTAS ---
 const areaNotas = document.getElementById('notes-area');
-areaNotas.value = localStorage.getItem('agenda_notas') || "";
-areaNotas.addEventListener('input', () => {
-    localStorage.setItem('agenda_notas', areaNotas.value);
-});
+if(areaNotas) {
+    areaNotas.value = localStorage.getItem('agenda_notas') || "";
+    areaNotas.addEventListener('input', () => {
+        localStorage.setItem('agenda_notas', areaNotas.value);
+    });
+}
 
-// FUNCIÓN PARA REINICIAR (OPCIONAL)
 function cerrarSesion() {
-    if(confirm("¿Deseas borrar tus datos y salir?")) {
+    if(confirm("¿Seguro que quieres borrar todo?")) {
         localStorage.clear();
         location.reload();
     }
 }
 
-// Inicializar al cargar la página
+// INICIO AUTOMÁTICO
 window.onload = () => {
     actualizarRelojYAlarma();
-    mostrarApp();
+    mostrarApp(); // Esto verifica si ya habías entrado antes
 };
