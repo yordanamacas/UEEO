@@ -1,104 +1,100 @@
-// --- SISTEMA DE REGISTRO ---
-function iniciarSesion() {
-    const nombre = document.getElementById('reg-nombre').value;
-    const curso = document.getElementById('reg-curso').value;
+let clasesGuardadas = JSON.parse(localStorage.getItem('agenda_universitaria_clases')) || [];
 
+// --- INICIO DE SESIÓN ---
+function entrar() {
+    const nombre = document.getElementById('nombre-usuario').value;
+    const curso = document.getElementById('curso-usuario').value;
+    
     if(nombre && curso) {
-        const datosUsuario = { nombre, curso };
-        localStorage.setItem('perfil_usuario', JSON.stringify(datosUsuario));
-        verificarSesion();
+        localStorage.setItem('perfil_usuario', JSON.stringify({nombre, curso}));
+        mostrarApp();
+    } else {
+        alert("Llena tus datos primero");
     }
 }
 
-function verificarSesion() {
+function mostrarApp() {
     const perfil = JSON.parse(localStorage.getItem('perfil_usuario'));
     if(perfil) {
-        document.getElementById('registro-container').style.display = 'none';
-        document.getElementById('main-content').style.display = 'block';
-        document.getElementById('display-user').innerText = `${perfil.nombre} | ${perfil.curso}`;
+        document.getElementById('pantalla-registro').style.display = 'none';
+        document.getElementById('pantalla-horario').style.display = 'block';
+        document.getElementById('tag-user').innerText = perfil.nombre.toUpperCase();
+        document.body.style.alignItems = 'flex-start';
+        document.body.style.paddingTop = '20px';
         renderizarHorario();
     }
 }
 
-// --- RELOJ Y FECHA AUTOMÁTICA ---
-function updateClock() {
-    const now = new Date();
-    document.getElementById('clock').textContent = now.toLocaleTimeString();
-    
-    // Genera la fecha automáticamente en español
+// --- RELOJ Y ALARMA AUTOMÁTICA ---
+function actualizarRelojYAlarma() {
+    const ahora = new Date();
+    const timeStr = ahora.toLocaleTimeString('es-ES', { hour12: false });
+    document.getElementById('clock').innerText = timeStr;
+
     const opciones = { weekday: 'long', day: 'numeric', month: 'long' };
-    document.getElementById('date-display').textContent = now.toLocaleDateString('es-ES', opciones);
+    document.getElementById('date-display').innerText = ahora.toLocaleDateString('es-ES', opciones);
+
+    // Lógica de Alarma 🔔
+    const HHMM = timeStr.substring(0, 5);
+    const dias = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
+    const hoy = dias[ahora.getDay()];
+
+    clasesGuardadas.forEach(clase => {
+        if(clase.dia === hoy && clase.hora === HHMM && ahora.getSeconds() === 0) {
+            alert("🔔 ¡ATENCIÓN! Empieza la clase de: " + clase.materia);
+        }
+    });
 }
-setInterval(updateClock, 1000);
+setInterval(actualizarRelojYAlarma, 1000);
 
-// --- AUTO-GUARDADO DE NOTAS ---
-const notesArea = document.getElementById('notes-area');
-notesArea.value = localStorage.getItem('userNotes') || "";
-notesArea.addEventListener('input', () => {
-    localStorage.setItem('userNotes', notesArea.value);
-});
+// --- GESTIÓN DE MATERIAS ---
+function abrirModal() { document.getElementById('modal-tarea').style.display = 'flex'; }
+function cerrarModal() { document.getElementById('modal-tarea').style.display = 'none'; }
 
-// --- FUNCIONES DEL MODAL Y HORARIO ---
-function showModal() { document.getElementById('modal').style.display = 'flex'; }
-function hideModal() { document.getElementById('modal').style.display = 'none'; }
+function guardarClase() {
+    const materia = document.getElementById('input-materia').value;
+    const hora = document.getElementById('input-hora').value;
+    const dia = document.getElementById('input-dia').value;
 
-// Recuperar clases guardadas o crear lista vacía
-let misClases = JSON.parse(localStorage.getItem('clases_guardadas')) || [];
-
-function addTask() {
-    const name = document.getElementById('task-name').value;
-    const time = document.getElementById('task-time').value;
-    const day = document.getElementById('task-day').value;
-
-    if(name && time) {
-        // Guardar en el array y luego en localStorage
-        misClases.push({ name, time, day });
-        localStorage.setItem('clases_guardadas', JSON.stringify(misClases));
-        
+    if(materia && hora) {
+        clasesGuardadas.push({ materia, hora, dia });
+        localStorage.setItem('agenda_universitaria_clases', JSON.stringify(clasesGuardadas));
         renderizarHorario();
-        hideModal();
-        
+        cerrarModal();
         // Limpiar inputs
-        document.getElementById('task-name').value = "";
-        document.getElementById('task-time').value = "";
+        document.getElementById('input-materia').value = "";
+        document.getElementById('input-hora').value = "";
     }
 }
 
 function renderizarHorario() {
-    // Limpiar todas las columnas primero
     const dias = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes"];
     dias.forEach(d => {
-        document.getElementById(d).querySelector('.tasks').innerHTML = "";
-    });
-
-    // Dibujar cada clase en su columna correspondiente
-    misClases.forEach((clase, index) => {
-        const dayDiv = document.getElementById(clase.day).querySelector('.tasks');
-        const taskHtml = `
-            <div class="task-entry">
-                <strong>${clase.time}</strong> - ${clase.name}
-                <button onclick="eliminarClase(${index})" style="border:none; background:none; color:red; cursor:pointer; float:right;">×</button>
-            </div>
-        `;
-        dayDiv.innerHTML += taskHtml;
+        const lista = document.getElementById(d).querySelector('.task-list');
+        lista.innerHTML = "";
+        clasesGuardadas.filter(c => c.dia === d)
+            .sort((a,b) => a.hora.localeCompare(b.hora))
+            .forEach(c => {
+                lista.innerHTML += `<div class="task-item"><b>${c.hora}</b> - ${c.materia}</div>`;
+            });
     });
 }
 
-function eliminarClase(index) {
-    misClases.splice(index, 1);
-    localStorage.setItem('clases_guardadas', JSON.stringify(misClases));
-    renderizarHorario();
-}
+// --- NOTAS AUTO-GUARDADO ---
+const areaNotas = document.getElementById('notes-area');
+areaNotas.value = localStorage.getItem('agenda_notas') || "";
+areaNotas.addEventListener('input', () => {
+    localStorage.setItem('agenda_notas', areaNotas.value);
+});
 
 function cerrarSesion() {
-    if(confirm("¿Seguro que quieres cerrar sesión? Se borrarán tus datos de perfil.")) {
+    if(confirm("¿Cerrar sesión?")) {
         localStorage.clear();
         location.reload();
     }
 }
 
-// Al cargar la página
 window.onload = () => {
-    updateClock();
-    verificarSesion();
+    actualizarRelojYAlarma();
+    mostrarApp();
 };
