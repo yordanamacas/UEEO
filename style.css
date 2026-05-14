@@ -1,85 +1,31 @@
-:root {
-    --rosa-fuerte: #ff4d8d;
-    --rosa-claro: #fce4ec;
-    --blanco: #ffffff;
-    --sombra: rgba(0, 0, 0, 0.1);
+/* Estilos para el Registro */
+.registro-overlay {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: #ff4d8d;
+    display: flex; justify-content: center; align-items: center;
+    z-index: 2000;
 }
-
-body {
-    font-family: 'Poppins', sans-serif;
-    background-color: var(--rosa-claro);
-    margin: 0;
-    display: flex;
-    justify-content: center;
+.registro-card {
+    background: white; padding: 40px; border-radius: 20px;
+    text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.1);
 }
-
-/* Contenedor tipo celular */
-.app-container {
-    width: 100%;
-    max-width: 450px;
-    min-height: 100vh;
-    background: var(--blanco);
-    position: relative;
-    box-shadow: 0 0 20px var(--sombra);
+.registro-card input {
+    display: block; width: 100%; padding: 12px;
+    margin: 10px 0; border: 1px solid #ddd; border-radius: 10px;
 }
-
-/* Pantalla de Bienvenida */
-.screen {
-    padding: 30px;
-    text-align: center;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-.welcome-card {
-    margin-top: 50px;
-    width: 100%;
-}
-
-.welcome-card h1 { color: var(--rosa-fuerte); font-size: 2rem; }
-
-input, select {
-    width: 90%;
-    padding: 12px;
-    margin: 10px 0;
-    border: 2px solid #eee;
-    border-radius: 12px;
-    font-size: 16px;
-}
-
-button {
-    background: var(--rosa-fuerte);
-    color: white;
-    border: none;
-    padding: 15px 30px;
-    border-radius: 12px;
+.registro-card button {
+    background: #ff4d8d; color: white; border: none;
+    padding: 12px 25px; border-radius: 10px; cursor: pointer;
     font-weight: bold;
-    cursor: pointer;
-    width: 95%;
-    margin-top: 10px;
 }
 
-/* Header de la Agenda */
-.app-header {
-    background: var(--rosa-fuerte);
-    color: white;
-    padding: 25px;
-    border-radius: 0 0 30px 30px;
-}
+/* Ajustes para el Horario */
+.days-container { display: flex; gap: 10px; padding: 20px; overflow-x: auto; }
+.day-column { background: white; border-radius: 15px; flex: 1; min-width: 180px; min-height: 300px; }
+.day-header { background: #d81b60; color: white; padding: 10px; text-align: center; border-radius: 15px 15px 0 0; }
+.task-entry { padding: 10px; border-bottom: 1px solid #eee; font-size: 0.9rem; }
 
-.user-bar { display: flex; justify-content: space-between; align-items: center; }
-.clock-big { font-size: 3rem; font-weight: bold; margin: 10px 0; text-align: center;}
-
-/* Lista de tareas */
-.day-card {
-    background: #fff;
-    margin: 15px;
-    border-radius: 15px;
-    box-shadow: 0 4px 8px var(--sombra);
-    overflow: hidden;
-    border-left: 6px solid var(--rosa-fuerte);
-}
-
-.day-title { background: #f8f8f8; padding: 10px; font-weight: bold; }
-.task-item { padding: 10px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between;}
+/* Estilos para el Modal */
+.modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 3000; justify-content: center; align-items: center; }
+.modal-content { background: white; padding: 30px; border-radius: 20px; width: 350px; }
