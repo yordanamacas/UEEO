@@ -2,54 +2,60 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Agenda Universitaria UNL</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Agenda UNL Pro</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <!-- Pantalla de Registro/Bienvenida -->
-    <div id="login-screen" class="login-container">
-        <div class="login-card">
-            <h1>🌸 Bienvenidos 🌸</h1>
-            <p>Ingresa tus datos para empezar</p>
-            <input type="text" id="reg-name" placeholder="Tu Nombre">
-            <input type="text" id="reg-curso" placeholder="Curso (ej: 3ero)">
-            <input type="text" id="reg-paralelo" placeholder="Paralelo (ej: A)">
-            <button onclick="saveUser()">Entrar a mi Agenda</button>
+    <!-- Pantalla de Bienvenida Estilo App -->
+    <div id="login-screen" class="screen-full">
+        <div class="welcome-box">
+            <div class="logo">🌸</div>
+            <h1>¡Hola!</h1>
+            <p>Configura tu agenda universitaria</p>
+            <div class="input-group">
+                <input type="text" id="reg-name" placeholder="Escribe tu nombre">
+                <input type="text" id="reg-curso" placeholder="Curso (Ej: 3ero)">
+                <input type="text" id="reg-paralelo" placeholder="Paralelo (Ej: A)">
+            </div>
+            <button class="btn-primary" onclick="saveUser()">Comenzar Agenda</button>
         </div>
     </div>
 
-    <!-- Contenido Principal (Oculto al inicio) -->
-    <div id="main-app" class="main-container" style="display:none;">
-        <header class="header">
-            <div class="user-info">
-                <span>🏛️</span>
-                <p id="display-user-name">Usuario</p>
-                <small id="display-user-details"></small>
+    <!-- App Principal -->
+    <div id="main-app" style="display:none;">
+        <header class="app-header">
+            <div class="profile">
+                <span class="avatar">🏛️</span>
+                <div class="text">
+                    <h2 id="display-user-name">Usuario</h2>
+                    <p id="display-user-details"></p>
+                </div>
             </div>
-            <h1 id="clock">00:00:00</h1>
-            <p id="date-display">Cargando fecha...</p>
-            <div class="header-buttons">
-                <button onclick="showModal()" class="btn-add">+</button>
-                <button onclick="logout()" class="btn-icon">🚪</button>
+            <div class="clock-section">
+                <h1 id="clock">00:00</h1>
+                <p id="date-display"></p>
             </div>
+            <button class="fab-add" onclick="showModal()">+</button>
         </header>
 
-        <section class="days-container" id="days-wrapper">
-            <!-- Los días se generan con el script -->
-        </section>
-
-        <footer class="notes-section">
-            <label>✎ Notas Personales</label>
-            <textarea id="notes-area"></textarea>
-        </footer>
+        <main class="scroll-area">
+            <div id="days-wrapper" class="days-grid">
+                <!-- Se genera por JS -->
+            </div>
+            
+            <div class="notes-card">
+                <label>✎ Notas Rápidas</label>
+                <textarea id="notes-area" placeholder="Escribe algo aquí..."></textarea>
+            </div>
+        </main>
     </div>
 
-    <!-- Modal para Tareas -->
-    <div id="modal" class="modal">
-        <div class="modal-content">
+    <!-- Modal Moderno -->
+    <div id="modal" class="modal-overlay">
+        <div class="modal-sheet">
             <h3>Nueva Clase</h3>
-            <input type="text" id="task-name" placeholder="Materia">
+            <input type="text" id="task-name" placeholder="Nombre de materia">
             <input type="time" id="task-time">
             <select id="task-day">
                 <option value="Lunes">Lunes</option>
@@ -58,9 +64,9 @@
                 <option value="Jueves">Jueves</option>
                 <option value="Viernes">Viernes</option>
             </select>
-            <div class="modal-footer">
-                <button onclick="hideModal()">Cancelar</button>
-                <button onclick="addTask()">Guardar</button>
+            <div class="modal-actions">
+                <button onclick="hideModal()" class="btn-sec">Cancelar</button>
+                <button onclick="addTask()" class="btn-primary">Guardar</button>
             </div>
         </div>
     </div>
