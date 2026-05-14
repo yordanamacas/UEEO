@@ -1,93 +1,107 @@
-// --- CARGA INICIAL ---
-// Usamos una función para obtener datos de forma segura
-function obtenerClases() {
-    const datos = localStorage.getItem('agenda_universitaria_clases');
-    return datos ? JSON.parse(datos) : [];
-}
+// --- CARGA E INICIALIZACIÓN ---
+let clasesGuardadas = JSON.parse(localStorage.getItem('agenda_universitaria_clases')) || [];
 
-let clasesGuardadas = obtenerClases();
-
-// --- FUNCIÓN DE GUARDADO (Forzando persistencia) ---
-function guardarClase() {
-    const materia = document.getElementById('input-materia').value;
-    const hora = document.getElementById('input-hora').value;
-    const dia = document.getElementById('input-dia').value;
-
-    if(materia && hora) {
-        // 1. Crear el objeto
-        const nuevaClase = { materia, hora, dia };
-        
-        // 2. Obtener lo que ya hay, agregar lo nuevo y volver a guardar
-        let listaActual = obtenerClases();
-        listaActual.push(nuevaClase);
-        
-        // 3. GUARDADO DIRECTO
-        localStorage.setItem('agenda_universitaria_clases', JSON.stringify(listaActual));
-        
-        // 4. Actualizar variable global y pantalla
-        clasesGuardadas = listaActual;
-        renderizarHorario();
-        cerrarModal();
-        
-        console.log("Dato guardado exitosamente:", nuevaClase);
-    } else {
-        alert("Por favor llena todos los campos");
+// --- FUNCIONES DEL MODAL (PARA QUE PUEDAS ESCRIBIR) ---
+function abrirModal() {
+    const modal = document.getElementById('modal-tarea');
+    if (modal) {
+        modal.style.display = 'flex';
+        // Esto pone el cursor automáticamente en el cuadro de texto
+        document.getElementById('input-materia').focus();
     }
 }
 
-// --- DIBUJAR EN PANTALLA ---
+function cerrarModal() {
+    const modal = document.getElementById('modal-tarea');
+    if (modal) modal.style.display = 'none';
+}
+
+// --- GUARDAR ASIGNATURA ---
+function guardarClase() {
+    const materiaInput = document.getElementById('input-materia');
+    const horaInput = document.getElementById('input-hora');
+    const diaInput = document.getElementById('input-dia');
+
+    if(materiaInput.value && horaInput.value) {
+        const nuevaClase = { 
+            materia: materiaInput.value, 
+            hora: horaInput.value, 
+            dia: diaInput.value 
+        };
+        
+        // Guardar en la lista y en el navegador
+        clasesGuardadas.push(nuevaClase);
+        localStorage.setItem('agenda_universitaria_clases', JSON.stringify(clasesGuardadas));
+        
+        // Actualizar la vista
+        renderizarHorario();
+        cerrarModal();
+        
+        // Limpiar para la próxima vez
+        materiaInput.value = "";
+        horaInput.value = "";
+    } else {
+        alert("¡Escribe el nombre de la materia y la hora!");
+    }
+}
+
+// --- DIBUJAR EN EL HORARIO ---
 function renderizarHorario() {
-    // Limpiamos todo el horario primero
     const dias = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes"];
     
     dias.forEach(d => {
         const columna = document.getElementById(d);
         if (columna) {
             const lista = columna.querySelector('.task-list');
-            lista.innerHTML = ""; 
-            
-            // Recorremos la lista actualizada
-            clasesGuardadas.filter(c => c.dia === d)
-                .sort((a,b) => a.hora.localeCompare(b.hora))
-                .forEach(c => {
-                    const item = document.createElement('div');
-                    item.className = 'task-item';
-                    item.innerHTML = `<b>${c.hora}</b> - ${c.materia}`;
-                    lista.appendChild(item);
-                });
+            if (lista) {
+                lista.innerHTML = ""; 
+                clasesGuardadas.filter(c => c.dia === d)
+                    .sort((a,b) => a.hora.localeCompare(b.hora))
+                    .forEach(c => {
+                        const item = document.createElement('div');
+                        item.className = 'task-item';
+                        item.innerHTML = `<b>${c.hora}</b> - ${c.materia}`;
+                        lista.appendChild(item);
+                    });
+            }
         }
     });
 }
 
-// --- NOTIFICACIONES ---
-function verificarAlarmas() {
+// --- RELOJ Y ALARMAS ---
+function actualizarApp() {
     const ahora = new Date();
-    const HHMM = ahora.toLocaleTimeString('es-ES', { hour12: false }).substring(0, 5);
-    const dias = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
-    const hoy = dias[ahora.getDay()];
+    const h = String(ahora.getHours()).padStart(2, '0');
+    const m = String(ahora.getMinutes()).padStart(2, '0');
+    const s = String(ahora.getSeconds()).padStart(2, '0');
+    
+    const reloj = document.getElementById('clock');
+    if (reloj) reloj.innerText = `${h}:${m}:${s}`;
 
-    clasesGuardadas.forEach(clase => {
-        if(clase.dia === hoy && clase.hora === HHMM && ahora.getSeconds() === 0) {
-            alert("⏰ Es hora de: " + clase.materia);
-        }
-    });
+    // Alerta de clase
+    const HHMM = `${h}:${m}`;
+    const diasSemana = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
+    const hoy = diasSemana[ahora.getDay()];
+
+    if (ahora.getSeconds() === 0) {
+        clasesGuardadas.forEach(c => {
+            if(c.dia === hoy && c.hora === HHMM) {
+                alert("📢 Clase ahora: " + c.materia);
+            }
+        });
+    }
 }
-setInterval(verificarAlarmas, 1000);
 
-// --- CARGA AL ABRIR LA PÁGINA ---
+setInterval(actualizarApp, 1000);
+
+// --- AL CARGAR LA PÁGINA ---
 window.onload = () => {
-    // Recuperar perfil
     const perfil = JSON.parse(localStorage.getItem('perfil_usuario'));
     if(perfil) {
         document.getElementById('pantalla-registro').style.display = 'none';
         document.getElementById('pantalla-horario').style.display = 'block';
         document.getElementById('tag-user').innerText = perfil.nombre.toUpperCase();
     }
-    
-    // Recargar datos guardados
-    clasesGuardadas = obtenerClases();
     renderizarHorario();
-    
-    // Notificaciones
-    if ("Notification" in window) Notification.requestPermission();
+    actualizarApp();
 };
