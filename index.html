@@ -2,61 +2,83 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Snoopy Planner Pro</title>
+    <meta name="viewport" content="width=1024">
+    <title>Agenda Universitaria UNL</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="app-container">
-        
-        <!-- PANTALLA 1: REGISTRO -->
-        <div id="login-screen" class="screen">
-            <div class="welcome-card">
-                <h1>🌸 Bienvenida 🌸</h1>
-                <p>Configura tu perfil escolar</p>
-                <input type="text" id="name" placeholder="Tu nombre">
-                <input type="text" id="curso" placeholder="Curso">
-                <input type="text" id="paralelo" placeholder="Paralelo">
-                <button onclick="registrar()">Entrar a mi Agenda</button>
-            </div>
-        </div>
-
-        <!-- PANTALLA 2: AGENDA -->
-        <div id="main-app" style="display: none;">
-            <header class="app-header">
-                <div class="user-bar">
-                    <span id="user-display">Nombre</span>
-                    <span id="details-display">Curso</span>
-                </div>
-                <div class="clock-big" id="reloj">00:00</div>
-                <div id="fecha" style="text-align: center;"></div>
-            </header>
-
-            <div style="padding: 10px;">
-                <button onclick="abrirModal()" style="background: #333;">+ Agregar Materia</button>
-            </div>
-
-            <div id="lista-agenda">
-                <!-- Aquí se cargan los días -->
-            </div>
+    <!-- PANTALLA DE REGISTRO INICIAL -->
+    <div id="registro-container" class="registro-overlay">
+        <div class="registro-card">
+            <h1>🌸 Registro 🌸</h1>
+            <input type="text" id="reg-nombre" placeholder="Ingresa tu nombre">
+            <input type="text" id="reg-curso" placeholder="Curso (ej. 3ro A)">
+            <button onclick="iniciarSesion()">Acceder a mi Agenda</button>
         </div>
     </div>
 
-    <!-- VENTANA EMERGENTE (MODAL) -->
-    <div id="modal-tarea" style="display:none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:100;">
-        <div style="background:white; margin: 20% auto; padding:20px; width:80%; border-radius:20px;">
+    <!-- CONTENIDO PRINCIPAL (Oculto al inicio) -->
+    <div id="main-content" class="main-container" style="display: none;">
+        <header class="header">
+            <div class="user-info">
+                <span>🏛️</span>
+                <p id="display-user">Cargando...</p>
+            </div>
+            <h1 id="clock">00:00:00</h1>
+            <p id="date-display">Cargando fecha...</p>
+            <div class="header-buttons">
+                <button onclick="showModal()" class="btn-add">+</button>
+                <button class="btn-icon" onclick="cerrarSesion()">🚪</button>
+            </div>
+        </header>
+
+        <section class="days-container">
+            <!-- Cada columna mantiene tu ID original -->
+            <div class="day-column" id="Lunes">
+                <div class="day-header"><h3>Lunes</h3></div>
+                <div class="tasks"></div>
+            </div>
+            <div class="day-column" id="Martes">
+                <div class="day-header"><h3>Martes</h3></div>
+                <div class="tasks"></div>
+            </div>
+            <div class="day-column" id="Miércoles">
+                <div class="day-header"><h3>Miércoles</h3></div>
+                <div class="tasks"></div>
+            </div>
+            <div class="day-column" id="Jueves">
+                <div class="day-header"><h3>Jueves</h3></div>
+                <div class="tasks"></div>
+            </div>
+            <div class="day-column" id="Viernes">
+                <div class="day-header"><h3>Viernes</h3></div>
+                <div class="tasks"></div>
+            </div>
+        </section>
+
+        <footer class="notes-section">
+            <label>✎ Bloc de Notas Dinámico (Auto-guardado)</label>
+            <textarea id="notes-area" placeholder="Escribe aquí tus pendientes..."></textarea>
+        </footer>
+    </div>
+
+    <!-- Modal Original -->
+    <div id="modal" class="modal">
+        <div class="modal-content">
             <h3>Nueva Clase</h3>
-            <input type="text" id="materia" placeholder="Nombre de materia">
-            <input type="time" id="hora">
-            <select id="dia-semana">
+            <input type="text" id="task-name" placeholder="Nombre de la materia">
+            <input type="time" id="task-time">
+            <select id="task-day">
                 <option value="Lunes">Lunes</option>
                 <option value="Martes">Martes</option>
-                <option value="Miercoles">Miércoles</option>
+                <option value="Miércoles">Miércoles</option>
                 <option value="Jueves">Jueves</option>
                 <option value="Viernes">Viernes</option>
             </select>
-            <button onclick="guardarTarea()">Guardar</button>
-            <button onclick="cerrarModal()" style="background:#ccc; color:333;">Cancelar</button>
+            <div class="modal-footer">
+                <button onclick="hideModal()">Cancelar</button>
+                <button onclick="addTask()">Guardar Clase</button>
+            </div>
         </div>
     </div>
 
