@@ -2,72 +2,61 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Agenda UNL Pro</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Snoopy Planner Pro</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <!-- Pantalla de Bienvenida Estilo App -->
-    <div id="login-screen" class="screen-full">
-        <div class="welcome-box">
-            <div class="logo">🌸</div>
-            <h1>¡Hola!</h1>
-            <p>Configura tu agenda universitaria</p>
-            <div class="input-group">
-                <input type="text" id="reg-name" placeholder="Escribe tu nombre">
-                <input type="text" id="reg-curso" placeholder="Curso (Ej: 3ero)">
-                <input type="text" id="reg-paralelo" placeholder="Paralelo (Ej: A)">
+    <div class="app-container">
+        
+        <!-- PANTALLA 1: REGISTRO -->
+        <div id="login-screen" class="screen">
+            <div class="welcome-card">
+                <h1>🌸 Bienvenida 🌸</h1>
+                <p>Configura tu perfil escolar</p>
+                <input type="text" id="name" placeholder="Tu nombre">
+                <input type="text" id="curso" placeholder="Curso">
+                <input type="text" id="paralelo" placeholder="Paralelo">
+                <button onclick="registrar()">Entrar a mi Agenda</button>
             </div>
-            <button class="btn-primary" onclick="saveUser()">Comenzar Agenda</button>
+        </div>
+
+        <!-- PANTALLA 2: AGENDA -->
+        <div id="main-app" style="display: none;">
+            <header class="app-header">
+                <div class="user-bar">
+                    <span id="user-display">Nombre</span>
+                    <span id="details-display">Curso</span>
+                </div>
+                <div class="clock-big" id="reloj">00:00</div>
+                <div id="fecha" style="text-align: center;"></div>
+            </header>
+
+            <div style="padding: 10px;">
+                <button onclick="abrirModal()" style="background: #333;">+ Agregar Materia</button>
+            </div>
+
+            <div id="lista-agenda">
+                <!-- Aquí se cargan los días -->
+            </div>
         </div>
     </div>
 
-    <!-- App Principal -->
-    <div id="main-app" style="display:none;">
-        <header class="app-header">
-            <div class="profile">
-                <span class="avatar">🏛️</span>
-                <div class="text">
-                    <h2 id="display-user-name">Usuario</h2>
-                    <p id="display-user-details"></p>
-                </div>
-            </div>
-            <div class="clock-section">
-                <h1 id="clock">00:00</h1>
-                <p id="date-display"></p>
-            </div>
-            <button class="fab-add" onclick="showModal()">+</button>
-        </header>
-
-        <main class="scroll-area">
-            <div id="days-wrapper" class="days-grid">
-                <!-- Se genera por JS -->
-            </div>
-            
-            <div class="notes-card">
-                <label>✎ Notas Rápidas</label>
-                <textarea id="notes-area" placeholder="Escribe algo aquí..."></textarea>
-            </div>
-        </main>
-    </div>
-
-    <!-- Modal Moderno -->
-    <div id="modal" class="modal-overlay">
-        <div class="modal-sheet">
+    <!-- VENTANA EMERGENTE (MODAL) -->
+    <div id="modal-tarea" style="display:none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:100;">
+        <div style="background:white; margin: 20% auto; padding:20px; width:80%; border-radius:20px;">
             <h3>Nueva Clase</h3>
-            <input type="text" id="task-name" placeholder="Nombre de materia">
-            <input type="time" id="task-time">
-            <select id="task-day">
+            <input type="text" id="materia" placeholder="Nombre de materia">
+            <input type="time" id="hora">
+            <select id="dia-semana">
                 <option value="Lunes">Lunes</option>
                 <option value="Martes">Martes</option>
                 <option value="Miercoles">Miércoles</option>
                 <option value="Jueves">Jueves</option>
                 <option value="Viernes">Viernes</option>
             </select>
-            <div class="modal-actions">
-                <button onclick="hideModal()" class="btn-sec">Cancelar</button>
-                <button onclick="addTask()" class="btn-primary">Guardar</button>
-            </div>
+            <button onclick="guardarTarea()">Guardar</button>
+            <button onclick="cerrarModal()" style="background:#ccc; color:333;">Cancelar</button>
         </div>
     </div>
 
