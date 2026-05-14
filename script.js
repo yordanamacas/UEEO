@@ -1,56 +1,50 @@
-// --- SISTEMA DE REGISTRO ---
+// Cargar datos al abrir
+document.addEventListener('DOMContentLoaded', () => {
+    updateTime();
+    initApp();
+});
+
 function saveUser() {
     const name = document.getElementById('reg-name').value;
     const curso = document.getElementById('reg-curso').value;
     const paralelo = document.getElementById('reg-paralelo').value;
 
     if(name && curso && paralelo) {
-        const userData = { name, curso, paralelo };
-        localStorage.setItem('appUser', JSON.stringify(userData));
+        localStorage.setItem('appUser', JSON.stringify({name, curso, paralelo}));
         initApp();
-    } else {
-        alert("Por favor llena todos los campos");
     }
 }
 
 function initApp() {
-    const userData = JSON.parse(localStorage.getItem('appUser'));
-    if(userData) {
+    const user = JSON.parse(localStorage.getItem('appUser'));
+    if(user) {
         document.getElementById('login-screen').style.display = 'none';
         document.getElementById('main-app').style.display = 'block';
-        document.getElementById('display-user-name').textContent = userData.name;
-        document.getElementById('display-user-details').textContent = `${userData.curso} - ${userData.paralelo}`;
+        document.getElementById('display-user-name').textContent = user.name;
+        document.getElementById('display-user-details').textContent = `${user.curso} | Paralelo ${user.paralelo}`;
         renderDays();
         renderTasks();
     }
 }
 
-// --- FECHA Y RELOJ ---
 function updateTime() {
     const now = new Date();
-    document.getElementById('clock').textContent = now.toLocaleTimeString();
-    
-    // Fecha automática en español
+    document.getElementById('clock').textContent = now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
     const options = { weekday: 'long', day: 'numeric', month: 'long' };
     document.getElementById('date-display').textContent = now.toLocaleDateString('es-ES', options);
 }
-setInterval(updateTime, 1000);
+setInterval(updateTime, 60000);
 
-// --- GESTIÓN DE DÍAS Y TAREAS ---
 const dias = ["Lunes", "Martes", "Miercoles", "Jueves", "Viernes"];
 
 function renderDays() {
-    const container = document.getElementById('days-wrapper');
-    container.innerHTML = "";
-    
-    dias.forEach(dia => {
-        container.innerHTML += `
-            <div class="day-column" id="${dia}">
-                <div class="day-header"><h3>${dia}</h3></div>
-                <div class="tasks"></div>
-            </div>
-        `;
-    });
+    const wrapper = document.getElementById('days-wrapper');
+    wrapper.innerHTML = dias.map(d => `
+        <div class="day-column">
+            <div class="day-header"><h3>${d}</h3></div>
+            <div id="tasks-${d}" class="tasks-list"></div>
+        </div>
+    `).join('');
 }
 
 let tasks = JSON.parse(localStorage.getItem('userTasks')) || [];
@@ -62,38 +56,33 @@ function addTask() {
 
     if(name && time) {
         tasks.push({ name, time, day });
-        localStorage.setItem('userTasks', JSON.stringify(tasks)); // AQUÍ SE GUARDA
+        localStorage.setItem('userTasks', JSON.stringify(tasks));
         renderTasks();
         hideModal();
-        document.getElementById('task-name').value = "";
     }
 }
 
 function renderTasks() {
-    document.querySelectorAll('.tasks').forEach(div => div.innerHTML = "");
-    tasks.forEach((task, index) => {
-        const dayDiv = document.getElementById(task.day)?.querySelector('.tasks');
-        if(dayDiv) {
-            dayDiv.innerHTML += `
-                <div class="task-item">
-                    <span><strong>${task.time}</strong> ${task.name}</span>
-                    <button onclick="deleteTask(${index})" style="border:none; background:none; color:red;">x</button>
-                </div>
-            `;
+    dias.forEach(d => {
+        const div = document.getElementById(`tasks-${d}`);
+        if(div) {
+            div.innerHTML = tasks
+                .filter(t => t.day === d)
+                .map((t, i) => `
+                    <div class="task-card">
+                        <span><b>${t.time}</b> ${t.name}</span>
+                        <button onclick="removeTask(${tasks.indexOf(t)})" style="color:red; border:none; background:none;">✕</button>
+                    </div>
+                `).join('');
         }
     });
 }
 
-function deleteTask(index) {
-    tasks.splice(index, 1);
+function removeTask(i) {
+    tasks.splice(i, 1);
     localStorage.setItem('userTasks', JSON.stringify(tasks));
     renderTasks();
 }
 
 function showModal() { document.getElementById('modal').style.display = 'flex'; }
 function hideModal() { document.getElementById('modal').style.display = 'none'; }
-function logout() { localStorage.removeItem('appUser'); location.reload(); }
-
-// Iniciar aplicación
-updateTime();
-initApp();
