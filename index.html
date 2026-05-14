@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=1024">
+    <title>Agenda Universitaria UNL</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="main-container">
+        <header class="header">
+            <div class="user-info">
+                <span>🏛️</span>
+                <p>YULI 10</p>
+            </div>
+            <h1 id="clock">00:00:00</h1>
+            <p id="date-display">martes, 12 de mayo</p>
+            <div class="header-buttons">
+                <button onclick="showModal()" class="btn-add">+</button>
+                <button class="btn-icon">🏛️</button>
+            </div>
+        </header>
+
+        <section class="days-container">
+            <div class="day-column" id="Lunes">
+                <div class="day-header"><h3>Lunes</h3><p>11 may</p></div>
+                <div class="tasks"></div>
+            </div>
+            <div class="day-column" id="Martes">
+                <div class="day-header"><h3>Martes</h3><p>12 may</p></div>
+                <div class="tasks"></div>
+            </div>
+            <div class="day-column" id="Miércoles">
+                <div class="day-header"><h3>Miércoles</h3><p>13 may</p></div>
+                <div class="tasks"></div>
+            </div>
+            <div class="day-column" id="Jueves">
+                <div class="day-header"><h3>Jueves</h3><p>14 may</p></div>
+                <div class="tasks"></div>
+            </div>
+            <div class="day-column" id="Viernes">
+                <div class="day-header"><h3>Viernes</h3><p>15 may</p></div>
+                <div class="tasks"></div>
+            </div>
+        </section>
+
+        <footer class="notes-section">
+            <label>✎ Bloc de Notas Dinámico (Auto-guardado)</label>
+            <textarea id="notes-area" placeholder="Escribe aquí tus pendientes de auditoría..."></textarea>
+        </footer>
+    </div>
+
+    <!-- Modal para agregar clases -->
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <h3>Nueva Clase</h3>
+            <input type="text" id="task-name" placeholder="Nombre de la materia">
+            <input type="time" id="task-time">
+            <select id="task-day">
+                <option value="Lunes">Lunes</option>
+                <option value="Martes">Martes</option>
+                <option value="Miércoles">Miércoles</option>
+                <option value="Jueves">Jueves</option>
+                <option value="Viernes">Viernes</option>
+            </select>
+            <div class="modal-footer">
+                <button onclick="hideModal()">Cancelar</button>
+                <button onclick="addTask()">Guardar Clase</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
